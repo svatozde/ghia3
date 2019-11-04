@@ -38,7 +38,8 @@ setuptools.setup(
     python_requires='>=3.6',
     packages=packages,
     data_files=[
-        ('', glob('data/**'))
+        ('', glob('data/**')),
+        ('', glob('LICENSE'))
     ],
     entry_points={  # Optional
         'console_scripts': [
