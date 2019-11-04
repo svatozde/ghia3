@@ -1,5 +1,6 @@
 import requests
 
+
 class GitHub:
     """
     This class can communicate with the GitHub API

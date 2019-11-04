@@ -188,5 +188,3 @@ def create_app(*args, **kwargs):
 
     return app
 
-
-

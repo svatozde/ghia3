@@ -1,5 +1,12 @@
 import click
-from ghia import GHIA, PrinterObserver
+from ghia.common import GHIA, PrinterObserver, get_token, get_rules
+
+def parse_reposlug(ctx, param, reposlug):
+    try:
+        owner, repo = reposlug.split('/')
+        return owner, repo
+    except ValueError:
+        raise click.BadParameter('not in owner/repository format')
 
 @click.command('ghia')
 @click.argument('reposlug', type=click.STRING, callback=parse_reposlug)
