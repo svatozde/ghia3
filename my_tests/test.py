@@ -1,19 +1,20 @@
 from unittest import TestCase
 from ghia.github import GitHub
 from betamax import Betamax
-from requests import Session
 from betamax.cassette import cassette
 import os
 import pathlib
 from ghia.common import GHIA,get_rules
-import configparser
+import importlib
+import pkg_resources
+
+
 
 TOKEN_PLACEHOLDER = '<AUTH_TOKEN>'
 TOKEN = os.getenv('GITHUB_TOKEN', default=TOKEN_PLACEHOLDER)
 
 USER_PLACEHOLDER = 'USER_PLACEHOLDER'
-#USER = os.getenv('GITHUB_USER', default=USER_PLACEHOLDER)
-USER = 'USER_PLACEHOLDER'
+USER = os.getenv('GITHUB_USER', default=USER_PLACEHOLDER)
 TOKEN_HEADER = 'token ' + TOKEN
 
 REPO = 'ghia_test_env'
@@ -34,10 +35,14 @@ def sanitize_token(interaction, current_cassette):
         )
 
 
+def sanitize_before_playback(interaction, current_cassette):
+    interaction.replace(USER_PLACEHOLDER,USER)
+
 with Betamax.configure() as config:
-    config.cassette_library_dir = 'cassettes'
+    config.cassette_library_dir = pathlib.Path(__file__).parent / 'cassettes'
     config.define_cassette_placeholder(TOKEN_PLACEHOLDER, TOKEN_HEADER)
     config.before_record(callback=sanitize_token)
+    config.before_playback(callback=sanitize_before_playback)
 
 
 def configPath(name):
@@ -73,5 +78,8 @@ class TestGit(TestCase):
                 ghia.run(USER, REPO)
                 issues = ghia.github.issues(USER, REPO, assignee=USER)
                 assert len(issues) == 14
+
+
+
 
 

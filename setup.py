@@ -10,7 +10,11 @@ with codecs.open("README.md", encoding='utf-8') as fh:
 with codecs.open("LICENSE", encoding='utf-8') as fh:
     license = fh.read()
 
-packages = setuptools.find_packages(include=['ghia'])
+packages = setuptools.find_packages(
+    include=[
+        'ghia'
+        ]
+    )
 
 
 def my_test_suite():
@@ -48,6 +52,8 @@ setuptools.setup(
     packages=packages,
     data_files=[
         ('', glob('data/**')),
+        ('', glob('my_tests/cassettes/**')),
+        ('', glob('my_tests/rules/**')),
         ('', glob('LICENSE'))
         ],
     entry_points={  # Optional
@@ -59,7 +65,7 @@ setuptools.setup(
         'nose',
         'coverage',
         'betamax',
-        'pytest',
+        'pytest'
         ],
     test_suite='nose.collector',
     )
