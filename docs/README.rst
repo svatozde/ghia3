@@ -73,6 +73,46 @@ _______________
                                   [required]
     --help                          Show this message and exit.
 
+.. line-block::
+
+    The reposlug is part of url 'user/repo_name'. The app will affect all
+    isues in given repository.
+
+Switches
+________
+
+.. code-block::
+
+    --strategy [append|set|change]
+
+.. line-block::
+
+    Application uses different strategies for adding users.
+    **Append** means that asignee is apended to the existing set of assignees
+    **set** assign the issue to the user only if there is no assignee jet
+    **cahnge** is pretey selfexplanatory. Assigne is cahnged in case the the
+    rule can be applied
+
+.. code-block::
+
+   --dry-run
+
+.. line-block::
+
+    When this flag is set then the app does not aplly any changes to actual
+    repo only listts them to output
+
+.. figure:: screen_changes.png
+   :scale: 50 %
+   :align: center
+
+.. figure:: screen_fallback_label.png
+   :scale: 50 %
+   :align: center
+
+
+
+
 
 
 
