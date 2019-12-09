@@ -13,6 +13,8 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../ghia'))
+sys.path.insert(0, os.path.abspath('../my_test'))
 
 
 # -- Project information -----------------------------------------------------
