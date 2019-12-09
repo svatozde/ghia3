@@ -56,7 +56,7 @@ _______________
 
     The app can be launched by file **ghia.py**
 
-.. code-block::
+.. sourcecode::
 
     Usage: ghia.py [OPTIONS] REPOSLUG
 
