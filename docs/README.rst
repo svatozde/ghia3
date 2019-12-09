@@ -56,7 +56,7 @@ _______________
 
     The app can be launched by file **ghia.py**
 
-.. sourcecode::
+.. sourcecode:: c
 
     Usage: ghia.py [OPTIONS] REPOSLUG
 
@@ -81,7 +81,7 @@ _______________
 Switches
 ________
 
-.. code-block::
+.. code-block:: c
 
     --strategy [append|set|change]
 
@@ -93,7 +93,7 @@ ________
     **cahnge** is pretey selfexplanatory. Assigne is cahnged in case the the
     rule can be applied
 
-.. code-block::
+.. code-block:: c
 
    --dry-run
 
