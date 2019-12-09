@@ -56,19 +56,68 @@ def _strategy_change(found, old):
 
 
 def _match_title(pattern, issue):
+    """
+       :param pattern:
+       :param issue:
+       :return: [True] if issue contains the pattern
+
+       >>> _match_text('aaa',{'title': 'aaa','body': "bbb"})
+
+       >>> _match_text('aaa',{'title': 'bbb','body': "bbb"})
+
+       """
     return re.search(pattern, issue['title'], re.IGNORECASE)
 
 
 def _match_text(pattern, issue):
+    """
+    :param pattern:
+    :param issue:
+    :return: [True] if issue contains the pattern
+
+    >>> _match_text('.*',{'body': 'aaa'})
+    <re.Match object; span=(0, 3), match='aaa'>
+
+    >>> _match_text('aaa',{'body': "bbb"})
+
+    """
     return re.search(pattern, issue['body'], re.IGNORECASE)
 
 
 def _match_label(pattern, issue):
+    """
+        :param pattern:
+        :param issue:
+        :return: [True] if issue contains the pattern
+
+        >>> _match_label('aaa', {'labels': [{'name': 'aaa'}]})
+        True
+
+        >>> _match_label('aaa', {'labels': [{'name': 'bbb'}]})
+        False
+    """
     return any(re.search(pattern, label['name'], re.IGNORECASE)
                for label in issue['labels'])
 
 
 def _match_any(*args):
+    """
+            :param pattern:
+            :param issue:
+            :return: [True] if issue contains the pattern
+
+            >>> _match_any('aaa',{'labels': [{'name': 'aaa'}],'body': 'bbb','title': 'bbb'})
+            True
+
+            >>> _match_any('aa',{'labels': [{'name': 'bbb'}],'body': 'bbb','title': 'bbb'})
+            False
+
+            >>> _match_any('aa',{'labels': [{'name': 'bbb'}],'body': 'aa','title': 'bbb'})
+            <re.Match object; span=(0, 2), match='aa'>
+
+            >>> _match_any('aa',{'labels': [{'name': 'bbb'}],'body': 'bb','title': 'aa'})
+            <re.Match object; span=(0, 2), match='aa'>
+        """
     return _match_title(*args) or _match_text(*args) or _match_label(*args)
 
 class GHIA:

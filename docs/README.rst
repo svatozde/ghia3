@@ -111,6 +111,39 @@ ________
    :align: center
 
 
+doctest
+_______
+
+.. line-block::
+
+    Matcher methods in common module can be tested wit doctest
+
+.. code-block:: python
+
+    ./ghia>python -m doctest common.py
+
+.. code-block:: python
+
+    def _match_any(*args):
+    """
+            :param pattern:
+            :param issue:
+            :return: [True] if issue contains the pattern
+
+            >>> _match_any('aaa',{'labels': [{'name': 'aaa'}],'body': 'bbb','title': 'bbb'})
+            True
+
+            >>> _match_any('aa',{'labels': [{'name': 'bbb'}],'body': 'bbb','title': 'bbb'})
+            False
+
+            >>> _match_any('aa',{'labels': [{'name': 'bbb'}],'body': 'aa','title': 'bbb'})
+            <re.Match object; span=(0, 2), match='aa'>
+
+            >>> _match_any('aa',{'labels': [{'name': 'bbb'}],'body': 'bb','title': 'aa'})
+            <re.Match object; span=(0, 2), match='aa'>
+        """
+    return _match_title(*args) or _match_text(*args) or _match_label(*args)
+
 
 
 
