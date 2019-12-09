@@ -1,0 +1,354 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ghia package &#8212; ghia 0.4 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="my_tests package" href="my_tests.html" />
+    <link rel="prev" title="GHIA README" href="README.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="ghia-package">
+<h1>ghia package<a class="headerlink" href="#ghia-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-ghia.cli">
+<span id="ghia-cli-module"></span><h2>ghia.cli module<a class="headerlink" href="#module-ghia.cli" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ghia.cli.parse_reposlug">
+<code class="sig-prename descclassname">ghia.cli.</code><code class="sig-name descname">parse_reposlug</code><span class="sig-paren">(</span><em class="sig-param">ctx</em>, <em class="sig-param">param</em>, <em class="sig-param">reposlug</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.cli.parse_reposlug" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-ghia.common">
+<span id="ghia-common-module"></span><h2>ghia.common module<a class="headerlink" href="#module-ghia.common" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ghia.common.GHIA">
+<em class="property">class </em><code class="sig-prename descclassname">ghia.common.</code><code class="sig-name descname">GHIA</code><span class="sig-paren">(</span><em class="sig-param">token</em>, <em class="sig-param">rules</em>, <em class="sig-param">fallback_label</em>, <em class="sig-param">dry_run</em>, <em class="sig-param">ghia_strategy</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.common.GHIA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="ghia.common.GHIA.DEFAULT_STRATEGY">
+<code class="sig-name descname">DEFAULT_STRATEGY</code><em class="property"> = 'append'</em><a class="headerlink" href="#ghia.common.GHIA.DEFAULT_STRATEGY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ghia.common.GHIA.ENVVAR_CONFIG">
+<code class="sig-name descname">ENVVAR_CONFIG</code><em class="property"> = 'GHIA_CONFIG'</em><a class="headerlink" href="#ghia.common.GHIA.ENVVAR_CONFIG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ghia.common.GHIA.ENVVAR_DRYRUN">
+<code class="sig-name descname">ENVVAR_DRYRUN</code><em class="property"> = 'GHIA_DRYRUN'</em><a class="headerlink" href="#ghia.common.GHIA.ENVVAR_DRYRUN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ghia.common.GHIA.ENVVAR_STRATEGY">
+<code class="sig-name descname">ENVVAR_STRATEGY</code><em class="property"> = 'GHIA_STRATEGY'</em><a class="headerlink" href="#ghia.common.GHIA.ENVVAR_STRATEGY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ghia.common.GHIA.ISSUES_PROCESSED_ACTIONS">
+<code class="sig-name descname">ISSUES_PROCESSED_ACTIONS</code><em class="property"> = frozenset({'assigned', 'edited', 'labeled', 'opened', 'reopened', 'transferred', 'unassigned', 'unlabeled'})</em><a class="headerlink" href="#ghia.common.GHIA.ISSUES_PROCESSED_ACTIONS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ghia.common.GHIA.MATCHERS">
+<code class="sig-name descname">MATCHERS</code><em class="property"> = {'any': &lt;function _match_any&gt;, 'label': &lt;function _match_label&gt;, 'text': &lt;function _match_text&gt;, 'title': &lt;function _match_title&gt;}</em><a class="headerlink" href="#ghia.common.GHIA.MATCHERS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="ghia.common.GHIA.STRATEGIES">
+<code class="sig-name descname">STRATEGIES</code><em class="property"> = {'append': &lt;function _strategy_append&gt;, 'change': &lt;function _strategy_change&gt;, 'set': &lt;function _strategy_set&gt;}</em><a class="headerlink" href="#ghia.common.GHIA.STRATEGIES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ghia.common.GHIA.add_observer">
+<code class="sig-name descname">add_observer</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">observer</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.common.GHIA.add_observer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ghia.common.GHIA.call_observers">
+<code class="sig-name descname">call_observers</code><span class="sig-paren">(</span><em class="sig-param">method</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.common.GHIA.call_observers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ghia.common.GHIA.remove_observer">
+<code class="sig-name descname">remove_observer</code><span class="sig-paren">(</span><em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.common.GHIA.remove_observer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ghia.common.GHIA.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">owner</em>, <em class="sig-param">repo</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.common.GHIA.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ghia.common.GHIA.run_issue">
+<code class="sig-name descname">run_issue</code><span class="sig-paren">(</span><em class="sig-param">owner</em>, <em class="sig-param">repo</em>, <em class="sig-param">issue</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.common.GHIA.run_issue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ghia.common.PrinterObserver">
+<em class="property">class </em><code class="sig-prename descclassname">ghia.common.</code><code class="sig-name descname">PrinterObserver</code><a class="headerlink" href="#ghia.common.PrinterObserver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="ghia.common.PrinterObserver.assignees">
+<em class="property">static </em><code class="sig-name descname">assignees</code><span class="sig-paren">(</span><em class="sig-param">old</em>, <em class="sig-param">new</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.common.PrinterObserver.assignees" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ghia.common.PrinterObserver.error">
+<em class="property">static </em><code class="sig-name descname">error</code><span class="sig-paren">(</span><em class="sig-param">message</em>, <em class="sig-param">of_issue=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.common.PrinterObserver.error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ghia.common.PrinterObserver.fallbacked">
+<em class="property">static </em><code class="sig-name descname">fallbacked</code><span class="sig-paren">(</span><em class="sig-param">label</em>, <em class="sig-param">added=True</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.common.PrinterObserver.fallbacked" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ghia.common.PrinterObserver.issue">
+<em class="property">static </em><code class="sig-name descname">issue</code><span class="sig-paren">(</span><em class="sig-param">owner</em>, <em class="sig-param">repo</em>, <em class="sig-param">issue</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.common.PrinterObserver.issue" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="ghia.common.get_rules">
+<code class="sig-prename descclassname">ghia.common.</code><code class="sig-name descname">get_rules</code><span class="sig-paren">(</span><em class="sig-param">ctx</em>, <em class="sig-param">param</em>, <em class="sig-param">config_rules</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.common.get_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract labels from labels config and do the checks
+config_rules: ConfigParser with loaded configuration of labels</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ghia.common.get_token">
+<code class="sig-prename descclassname">ghia.common.</code><code class="sig-name descname">get_token</code><span class="sig-paren">(</span><em class="sig-param">ctx</em>, <em class="sig-param">param</em>, <em class="sig-param">config_auth</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.common.get_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract token from auth config and do the checks
+config_auth: ConfigParser with loaded configuration of auth</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ghia.common.parse_rules">
+<code class="sig-prename descclassname">ghia.common.</code><code class="sig-name descname">parse_rules</code><span class="sig-paren">(</span><em class="sig-param">cfg</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.common.parse_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse labels to dict where label is key and list
+of patterns is corresponding value
+cfg: ConfigParser with loaded configuration of labels</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ghia.github">
+<span id="ghia-github-module"></span><h2>ghia.github module<a class="headerlink" href="#module-ghia.github" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="ghia.github.GitHub">
+<em class="property">class </em><code class="sig-prename descclassname">ghia.github.</code><code class="sig-name descname">GitHub</code><span class="sig-paren">(</span><em class="sig-param">token</em>, <em class="sig-param">session=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.github.GitHub" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class can communicate with the GitHub API
+just give it a token and go.</p>
+<dl class="attribute">
+<dt id="ghia.github.GitHub.API">
+<code class="sig-name descname">API</code><em class="property"> = 'https://api.github.com'</em><a class="headerlink" href="#ghia.github.GitHub.API" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ghia.github.GitHub.issues">
+<code class="sig-name descname">issues</code><span class="sig-paren">(</span><em class="sig-param">owner</em>, <em class="sig-param">repo</em>, <em class="sig-param">state='open'</em>, <em class="sig-param">assignee=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.github.GitHub.issues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get issues of a repo
+owner: GitHub user or org
+repo: repo name
+state: open, closed, all (default open)
+assignee: optional filter for assignees (None, “none”, “&lt;username&gt;”, or “*”)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ghia.github.GitHub.set_issue_assignees">
+<code class="sig-name descname">set_issue_assignees</code><span class="sig-paren">(</span><em class="sig-param">owner</em>, <em class="sig-param">repo</em>, <em class="sig-param">number</em>, <em class="sig-param">assignees</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.github.GitHub.set_issue_assignees" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets assignees for the issue. Replaces all existing assignees.
+owner: GitHub user or org
+repo: repo name
+number: issue id
+assignees: list of usernames (as strings)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ghia.github.GitHub.set_issue_labels">
+<code class="sig-name descname">set_issue_labels</code><span class="sig-paren">(</span><em class="sig-param">owner</em>, <em class="sig-param">repo</em>, <em class="sig-param">number</em>, <em class="sig-param">labels</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.github.GitHub.set_issue_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets labels for the issue. Replaces all existing labels.
+owner: GitHub user or org
+repo: repo name
+number: issue id
+labels: list of labels (as strings)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ghia.github.GitHub.user">
+<code class="sig-name descname">user</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ghia.github.GitHub.user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get current user authenticated by token</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-ghia.web">
+<span id="ghia-web-module"></span><h2>ghia.web module<a class="headerlink" href="#module-ghia.web" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ghia.web.create_app">
+<code class="sig-prename descclassname">ghia.web.</code><code class="sig-name descname">create_app</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.web.create_app" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ghia.web.index">
+<code class="sig-prename descclassname">ghia.web.</code><code class="sig-name descname">index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ghia.web.index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ghia.web.load_config_web">
+<code class="sig-prename descclassname">ghia.web.</code><code class="sig-name descname">load_config_web</code><span class="sig-paren">(</span><em class="sig-param">app</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.web.load_config_web" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ghia.web.process_webhook_issues">
+<code class="sig-prename descclassname">ghia.web.</code><code class="sig-name descname">process_webhook_issues</code><span class="sig-paren">(</span><em class="sig-param">payload</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.web.process_webhook_issues" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process webhook event “issue”
+payload: event payload</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ghia.web.process_webhook_ping">
+<code class="sig-prename descclassname">ghia.web.</code><code class="sig-name descname">process_webhook_ping</code><span class="sig-paren">(</span><em class="sig-param">payload</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.web.process_webhook_ping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process webhook event “ping”
+payload: event payload</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ghia.web.webhook_listener">
+<code class="sig-prename descclassname">ghia.web.</code><code class="sig-name descname">webhook_listener</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ghia.web.webhook_listener" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ghia.web.webhook_verify_signature">
+<code class="sig-prename descclassname">ghia.web.</code><code class="sig-name descname">webhook_verify_signature</code><span class="sig-paren">(</span><em class="sig-param">payload</em>, <em class="sig-param">signature</em>, <em class="sig-param">secret</em>, <em class="sig-param">encoding='utf-8'</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.web.webhook_verify_signature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verify the payload with given signature against given secret
+see <a class="reference external" href="https://developer.github.com/webhooks/securing/">https://developer.github.com/webhooks/securing/</a>
+payload: received data as dict
+signature: included SHA1 signature of payload (with secret)
+secret: secret to verify signature
+encoding: encoding for secret (optional)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ghia">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ghia" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ghia.create_app">
+<code class="sig-prename descclassname">ghia.</code><code class="sig-name descname">create_app</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#ghia.create_app" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">ghia</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">GHIA README</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ghia package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ghia.cli">ghia.cli module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ghia.common">ghia.common module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ghia.github">ghia.github module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ghia.web">ghia.web module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-ghia">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="my_tests.html">my_tests package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">docs</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="README.html" title="previous chapter">GHIA README</a></li>
+      <li>Next: <a href="my_tests.html" title="next chapter">my_tests package</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Zdenek Svaton.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/ghia.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

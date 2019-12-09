@@ -1,0 +1,83 @@
+GHIA README
+===========
+
+Pusrpose of GHIA application is to assign issues to users, based on the
+content of the issue. Example: When the test of the issues contains string
+"network error", the it is assigned to user PepaNovak.
+
+
+rules.cfg
+_________
+
+.. code-block:: cfg
+
+    [patterns]
+    MarekSuchanek=
+    title:network
+    text:protocol
+    text:http[s]{0,1}://localhost:[0-9]{2,5}
+    label:^(network|networking)$
+    hroncok=any:Python
+
+    [fallback]
+    label=Need assignment
+
+.. line-block::
+
+    The rules always starts with one of the following strings **title:** ,
+    **text:**, **label:**, **any:** descripting where to find the pattern.
+    Following after coma is the regex pattern. There can be more rules for
+    single user, every rule is separated by new line.
+    Section labeled **fallback** is optional and is used only when any of the
+    rules cnaot be successfully applied to issue.
+
+auth.cfg
+________
+
+.. code-block:: cfg
+
+    [github]
+    token=TOKEN
+    secret=WEBHOOK_SECRET
+
+.. line-block::
+
+    File **auth.cfg** is used to store auth details for repo. You must
+    generate token for this app on the github ui.
+
+.. figure:: github_token.png
+   :scale: 50 %
+   :align: center
+
+Running the app
+_______________
+
+.. line-block::
+
+    The app can be launched by file **ghia.py**
+
+.. code-block::
+
+    Usage: ghia.py [OPTIONS] REPOSLUG
+
+    CLI tool for automatic issue assigning of GitHub issues
+
+    Options:
+    -s, --strategy [append|set|change]
+                                  How to handle assignment collisions.
+                                  [default: append]
+    -d, --dry-run                   Run without making any changes.
+    -a, --config-auth FILENAME      File with authorization configuration.
+                                  [required]
+    -r, --config-rules FILENAME     File with assignment rules configuration.
+                                  [required]
+    --help                          Show this message and exit.
+
+
+
+
+
+
+
+
+

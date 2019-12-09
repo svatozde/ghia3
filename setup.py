@@ -3,6 +3,9 @@ import codecs
 import unittest
 import my_tests
 from glob import glob
+from sphinx.setup_command import BuildDoc
+
+cmdclass = {'build_sphinx': BuildDoc}
 
 with codecs.open("README.md", encoding='utf-8') as fh:
     long_description = fh.read()
@@ -15,7 +18,6 @@ packages = setuptools.find_packages(
         'ghia'
         ]
     )
-
 
 def my_test_suite():
     print("TEST SUITE INIT")
