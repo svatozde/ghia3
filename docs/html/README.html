@@ -80,20 +80,20 @@ content of the issue. Example: When the test of the issues contains string
 <div class="line-block">
 <div class="line">The app can be launched by file <strong>ghia.py</strong></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Usage</span><span class="p">:</span> <span class="n">ghia</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="n">OPTIONS</span><span class="p">]</span> <span class="n">REPOSLUG</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">Usage</span><span class="p">:</span> <span class="n">ghia</span><span class="p">.</span><span class="n">py</span> <span class="p">[</span><span class="n">OPTIONS</span><span class="p">]</span> <span class="n">REPOSLUG</span>
 
 <span class="n">CLI</span> <span class="n">tool</span> <span class="k">for</span> <span class="n">automatic</span> <span class="n">issue</span> <span class="n">assigning</span> <span class="n">of</span> <span class="n">GitHub</span> <span class="n">issues</span>
 
-<span class="n">Options</span><span class="p">:</span>
-<span class="o">-</span><span class="n">s</span><span class="p">,</span> <span class="o">--</span><span class="n">strategy</span> <span class="p">[</span><span class="n">append</span><span class="o">|</span><span class="nb">set</span><span class="o">|</span><span class="n">change</span><span class="p">]</span>
-                              <span class="n">How</span> <span class="n">to</span> <span class="n">handle</span> <span class="n">assignment</span> <span class="n">collisions</span><span class="o">.</span>
-                              <span class="p">[</span><span class="n">default</span><span class="p">:</span> <span class="n">append</span><span class="p">]</span>
-<span class="o">-</span><span class="n">d</span><span class="p">,</span> <span class="o">--</span><span class="n">dry</span><span class="o">-</span><span class="n">run</span>                   <span class="n">Run</span> <span class="n">without</span> <span class="n">making</span> <span class="nb">any</span> <span class="n">changes</span><span class="o">.</span>
-<span class="o">-</span><span class="n">a</span><span class="p">,</span> <span class="o">--</span><span class="n">config</span><span class="o">-</span><span class="n">auth</span> <span class="n">FILENAME</span>      <span class="n">File</span> <span class="k">with</span> <span class="n">authorization</span> <span class="n">configuration</span><span class="o">.</span>
+<span class="nl">Options</span><span class="p">:</span>
+<span class="o">-</span><span class="n">s</span><span class="p">,</span> <span class="o">--</span><span class="n">strategy</span> <span class="p">[</span><span class="n">append</span><span class="o">|</span><span class="n">set</span><span class="o">|</span><span class="n">change</span><span class="p">]</span>
+                              <span class="n">How</span> <span class="n">to</span> <span class="n">handle</span> <span class="n">assignment</span> <span class="n">collisions</span><span class="p">.</span>
+                              <span class="p">[</span><span class="k">default</span><span class="o">:</span> <span class="n">append</span><span class="p">]</span>
+<span class="o">-</span><span class="n">d</span><span class="p">,</span> <span class="o">--</span><span class="n">dry</span><span class="o">-</span><span class="n">run</span>                   <span class="n">Run</span> <span class="n">without</span> <span class="n">making</span> <span class="n">any</span> <span class="n">changes</span><span class="p">.</span>
+<span class="o">-</span><span class="n">a</span><span class="p">,</span> <span class="o">--</span><span class="n">config</span><span class="o">-</span><span class="n">auth</span> <span class="n">FILENAME</span>      <span class="n">File</span> <span class="n">with</span> <span class="n">authorization</span> <span class="n">configuration</span><span class="p">.</span>
                               <span class="p">[</span><span class="n">required</span><span class="p">]</span>
-<span class="o">-</span><span class="n">r</span><span class="p">,</span> <span class="o">--</span><span class="n">config</span><span class="o">-</span><span class="n">rules</span> <span class="n">FILENAME</span>     <span class="n">File</span> <span class="k">with</span> <span class="n">assignment</span> <span class="n">rules</span> <span class="n">configuration</span><span class="o">.</span>
+<span class="o">-</span><span class="n">r</span><span class="p">,</span> <span class="o">--</span><span class="n">config</span><span class="o">-</span><span class="n">rules</span> <span class="n">FILENAME</span>     <span class="n">File</span> <span class="n">with</span> <span class="n">assignment</span> <span class="n">rules</span> <span class="n">configuration</span><span class="p">.</span>
                               <span class="p">[</span><span class="n">required</span><span class="p">]</span>
-<span class="o">--</span><span class="n">help</span>                          <span class="n">Show</span> <span class="n">this</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span><span class="o">.</span>
+<span class="o">--</span><span class="n">help</span>                          <span class="n">Show</span> <span class="n">this</span> <span class="n">message</span> <span class="n">and</span> <span class="n">exit</span><span class="p">.</span>
 </pre></div>
 </div>
 <div class="line-block">
@@ -103,7 +103,7 @@ content of the issue. Example: When the test of the issues contains string
 </div>
 <div class="section" id="switches">
 <h2>Switches<a class="headerlink" href="#switches" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">strategy</span> <span class="p">[</span><span class="n">append</span><span class="o">|</span><span class="nb">set</span><span class="o">|</span><span class="n">change</span><span class="p">]</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">strategy</span> <span class="p">[</span><span class="n">append</span><span class="o">|</span><span class="n">set</span><span class="o">|</span><span class="n">change</span><span class="p">]</span>
 </pre></div>
 </div>
 <div class="line-block">
@@ -113,7 +113,7 @@ content of the issue. Example: When the test of the issues contains string
 <div class="line"><strong>cahnge</strong> is pretey selfexplanatory. Assigne is cahnged in case the the</div>
 <div class="line">rule can be applied</div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">dry</span><span class="o">-</span><span class="n">run</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">dry</span><span class="o">-</span><span class="n">run</span>
 </pre></div>
 </div>
 <div class="line-block">
@@ -186,7 +186,6 @@ content of the issue. Example: When the test of the issues contains string
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ghia.html">ghia package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="my_tests.html">my_tests package</a></li>
 </ul>
 
 <div class="relations">
