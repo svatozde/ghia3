@@ -7,7 +7,7 @@ Welcome to ghia's documentation!
 ================================
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 20
 
    README
    ghia
