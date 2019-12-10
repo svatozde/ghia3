@@ -111,7 +111,7 @@ ________
    :align: center
 
 
-Genertaing docs
+Generating docs
 _______________
 
 .. line-block::
