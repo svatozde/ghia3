@@ -1,0 +1,292 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ghia.web &#8212; ghia 0.4 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for ghia.web</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">flask</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">hmac</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">configparser</span>
+
+<span class="kn">from</span> <span class="nn">ghia.common</span> <span class="k">import</span> <span class="n">GHIA</span><span class="p">,</span> <span class="n">parse_rules</span>
+
+
+
+
+<div class="viewcode-block" id="load_config_web"><a class="viewcode-back" href="../../ghia.html#ghia.web.load_config_web">[docs]</a><span class="k">def</span> <span class="nf">load_config_web</span><span class="p">(</span><span class="n">app</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">GHIA</span><span class="o">.</span><span class="n">ENVVAR_CONFIG</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Config not supplied by envvar </span><span class="si">{GHIA.ENVVAR_CONFIG}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">config_files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">GHIA</span><span class="o">.</span><span class="n">ENVVAR_CONFIG</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">optionxform</span> <span class="o">=</span> <span class="nb">str</span>
+    <span class="n">cfg</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">config_files</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cfg</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="s1">&#39;github&#39;</span><span class="p">,</span> <span class="s1">&#39;token&#39;</span><span class="p">):</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;Missing GitHub token in the given configuration&#39;</span><span class="p">)</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;github_token&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;github&#39;</span><span class="p">,</span> <span class="s1">&#39;token&#39;</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;github_secret&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;github&#39;</span><span class="p">,</span> <span class="s1">&#39;secret&#39;</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">patterns</span><span class="p">,</span> <span class="n">fallback_label</span> <span class="o">=</span> <span class="n">parse_rules</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;patterns&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">patterns</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;fallback_label&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fallback_label</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;Incorrect rules configuration format&#39;</span><span class="p">)</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="webhook_verify_signature"><a class="viewcode-back" href="../../ghia.html#ghia.web.webhook_verify_signature">[docs]</a><span class="k">def</span> <span class="nf">webhook_verify_signature</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">signature</span><span class="p">,</span> <span class="n">secret</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verify the payload with given signature against given secret</span>
+<span class="sd">    see https://developer.github.com/webhooks/securing/</span>
+<span class="sd">    payload: received data as dict</span>
+<span class="sd">    signature: included SHA1 signature of payload (with secret)</span>
+<span class="sd">    secret: secret to verify signature</span>
+<span class="sd">    encoding: encoding for secret (optional)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">hmac</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">secret</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">encoding</span><span class="p">),</span> <span class="n">payload</span><span class="p">,</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">hmac</span><span class="o">.</span><span class="n">compare_digest</span><span class="p">(</span><span class="s1">&#39;sha1=&#39;</span> <span class="o">+</span> <span class="n">h</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(),</span> <span class="n">signature</span><span class="p">)</span></div>
+
+
+<span class="n">GHIA</span><span class="o">.</span><span class="n">ISSUES_PROCESSED_ACTIONS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">([</span>
+    <span class="s1">&#39;opened&#39;</span><span class="p">,</span> <span class="s1">&#39;edited&#39;</span><span class="p">,</span> <span class="s1">&#39;transferred&#39;</span><span class="p">,</span> <span class="s1">&#39;reopened&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;assigned&#39;</span><span class="p">,</span> <span class="s1">&#39;unassigned&#39;</span><span class="p">,</span> <span class="s1">&#39;labeled&#39;</span><span class="p">,</span> <span class="s1">&#39;unlabeled&#39;</span>
+<span class="p">])</span>
+
+
+<div class="viewcode-block" id="process_webhook_issues"><a class="viewcode-back" href="../../ghia.html#ghia.web.process_webhook_issues">[docs]</a><span class="k">def</span> <span class="nf">process_webhook_issues</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Process webhook event &quot;issue&quot;</span>
+<span class="sd">    payload: event payload</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ghia</span> <span class="o">=</span> <span class="n">flask</span><span class="o">.</span><span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;ghia&#39;</span><span class="p">]</span>
+    <span class="n">reposlug</span> <span class="o">=</span> <span class="n">issue_number</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span>
+        <span class="n">issue</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;issue&#39;</span><span class="p">]</span>
+        <span class="n">issue_number</span> <span class="o">=</span> <span class="n">issue</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">]</span>
+        <span class="n">reposlug</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;repository&#39;</span><span class="p">][</span><span class="s1">&#39;full_name&#39;</span><span class="p">]</span>
+        <span class="n">owner</span><span class="p">,</span> <span class="n">repo</span> <span class="o">=</span> <span class="n">reposlug</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">action</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ghia</span><span class="o">.</span><span class="n">ISSUES_PROCESSED_ACTIONS</span><span class="p">:</span>
+            <span class="n">flask</span><span class="o">.</span><span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="n">f</span><span class="s1">&#39;Action </span><span class="si">{action}</span><span class="s1"> from </span><span class="si">{reposlug}</span><span class="s1">#</span><span class="si">{issue_number}</span><span class="s1"> skipped&#39;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="s1">&#39;Accepted but action not processed&#39;</span><span class="p">,</span> <span class="mi">202</span>
+
+        <span class="k">if</span> <span class="n">issue</span><span class="p">[</span><span class="s1">&#39;state&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;open&#39;</span><span class="p">:</span>
+            <span class="n">ghia</span><span class="o">.</span><span class="n">run_issue</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">issue</span><span class="p">)</span>
+
+        <span class="n">flask</span><span class="o">.</span><span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="n">f</span><span class="s1">&#39;Action </span><span class="si">{action}</span><span class="s1"> from </span><span class="si">{reposlug}</span><span class="s1">#</span><span class="si">{issue_number}</span><span class="s1"> processed&#39;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;Issue successfully processed&#39;</span><span class="p">,</span> <span class="mi">200</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+        <span class="n">flask</span><span class="o">.</span><span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="n">f</span><span class="s1">&#39;Incorrect data entity from IP </span><span class="si">{flask.request.remote_addr}</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
+        <span class="n">flask</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">422</span><span class="p">,</span> <span class="s1">&#39;Missing required payload fields&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">flask</span><span class="o">.</span><span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+            <span class="n">f</span><span class="s1">&#39;Error occurred while processing </span><span class="si">{reposlug}</span><span class="s1">#</span><span class="si">{issue_number}</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
+        <span class="n">flask</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="s1">&#39;Issue processing error&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="process_webhook_ping"><a class="viewcode-back" href="../../ghia.html#ghia.web.process_webhook_ping">[docs]</a><span class="k">def</span> <span class="nf">process_webhook_ping</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Process webhook event &quot;ping&quot;</span>
+<span class="sd">    payload: event payload</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">repo</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;repository&#39;</span><span class="p">][</span><span class="s1">&#39;full_name&#39;</span><span class="p">]</span>
+        <span class="n">hook_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;hook_id&#39;</span><span class="p">]</span>
+        <span class="n">flask</span><span class="o">.</span><span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="n">f</span><span class="s1">&#39;Accepting PING from </span><span class="si">{repo}</span><span class="s1">#WH-</span><span class="si">{hook_id}</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;PONG&#39;</span><span class="p">,</span> <span class="mi">200</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">flask</span><span class="o">.</span><span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="n">f</span><span class="s1">&#39;Incorrect data entity from IP </span><span class="si">{flask.request.remote_addr}</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
+        <span class="n">flask</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">422</span><span class="p">,</span> <span class="s1">&#39;Missing payload contents&#39;</span><span class="p">)</span></div>
+
+
+<span class="n">webhook_processors</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;issues&#39;</span><span class="p">:</span> <span class="n">process_webhook_issues</span><span class="p">,</span>
+    <span class="s1">&#39;ping&#39;</span><span class="p">:</span> <span class="n">process_webhook_ping</span>
+<span class="p">}</span>
+
+
+<span class="n">ghia_blueprint</span> <span class="o">=</span> <span class="n">flask</span><span class="o">.</span><span class="n">Blueprint</span><span class="p">(</span><span class="s1">&#39;ghia&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="index"><a class="viewcode-back" href="../../ghia.html#ghia.web.index">[docs]</a><span class="nd">@ghia_blueprint</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">flask</span><span class="o">.</span><span class="n">render_template</span><span class="p">(</span>
+        <span class="s1">&#39;index.html.j2&#39;</span><span class="p">,</span>
+        <span class="n">rules</span><span class="o">=</span><span class="n">flask</span><span class="o">.</span><span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;patterns&#39;</span><span class="p">],</span>
+        <span class="n">fallback_label</span><span class="o">=</span><span class="n">flask</span><span class="o">.</span><span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;fallback_label&#39;</span><span class="p">],</span>
+        <span class="n">user</span><span class="o">=</span><span class="n">flask</span><span class="o">.</span><span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;github_user&#39;</span><span class="p">]</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="webhook_listener"><a class="viewcode-back" href="../../ghia.html#ghia.web.webhook_listener">[docs]</a><span class="nd">@ghia_blueprint</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">webhook_listener</span><span class="p">():</span>
+    <span class="n">signature</span> <span class="o">=</span> <span class="n">flask</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;X-Hub-Signature&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">event</span> <span class="o">=</span> <span class="n">flask</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;X-GitHub-Event&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">payload</span> <span class="o">=</span> <span class="n">flask</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
+
+    <span class="n">secret</span> <span class="o">=</span> <span class="n">flask</span><span class="o">.</span><span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;github_secret&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">secret</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">webhook_verify_signature</span><span class="p">(</span>
+            <span class="n">flask</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">signature</span><span class="p">,</span> <span class="n">secret</span>
+    <span class="p">):</span>
+        <span class="n">flask</span><span class="o">.</span><span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="n">f</span><span class="s1">&#39;Attempt with bad secret from IP </span><span class="si">{flask.request.remote_addr}</span><span class="s1">&#39;</span>
+        <span class="p">)</span>
+        <span class="n">flask</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">401</span><span class="p">,</span> <span class="s1">&#39;Bad webhook secret&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">event</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">webhook_processors</span><span class="p">:</span>
+        <span class="n">supported</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">webhook_processors</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">flask</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;Event not supported (supported: </span><span class="si">{supported}</span><span class="s1">)&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">webhook_processors</span><span class="p">[</span><span class="n">event</span><span class="p">](</span><span class="n">payload</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="create_app"><a class="viewcode-back" href="../../ghia.html#ghia.web.create_app">[docs]</a><span class="k">def</span> <span class="nf">create_app</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">flask</span><span class="o">.</span><span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Loading GHIA configuration from files&#39;</span><span class="p">)</span>
+    <span class="n">load_config_web</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Loading GHIA strategy and ry-run configuration&#39;</span><span class="p">)</span>
+    <span class="n">strategy</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">GHIA</span><span class="o">.</span><span class="n">ENVVAR_STRATEGY</span><span class="p">,</span> <span class="n">GHIA</span><span class="o">.</span><span class="n">DEFAULT_STRATEGY</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">strategy</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">GHIA</span><span class="o">.</span><span class="n">STRATEGIES</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Unknown strategy &quot;</span><span class="si">{strategy}</span><span class="s1">&quot; entered &#39;</span>
+                            <span class="n">f</span><span class="s1">&#39;via envvar </span><span class="si">{GHIA.ENVVAR_STRATEGY}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">err</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">dry_run</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="o">.</span><span class="n">BOOLEAN_STATES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">GHIA</span><span class="o">.</span><span class="n">ENVVAR_DRYRUN</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="kc">False</span>
+    <span class="p">)</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Preparing GHIA with strategy </span><span class="si">{strategy}</span><span class="s1"> and dry-run &#39;</span>
+                    <span class="n">f</span><span class="s1">&#39;{&quot;enabled&quot; if dry_run else &quot;disabled&quot;}&#39;</span><span class="p">)</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;ghia&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">GHIA</span><span class="p">(</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;github_token&#39;</span><span class="p">],</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;patterns&#39;</span><span class="p">],</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;fallback_label&#39;</span><span class="p">],</span>
+        <span class="n">dry_run</span><span class="p">,</span>
+        <span class="n">strategy</span>
+    <span class="p">)</span>
+    <span class="c1"># Possible to add some observer app.logger</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Getting GitHub user using the given token&#39;</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;github_user&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;ghia&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">github</span><span class="o">.</span><span class="n">user</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;Bad token: could not get GitHub user!&#39;</span><span class="p">,</span> <span class="n">err</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">ghia_blueprint</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">app</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">ghia</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">GHIA README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ghia.html">ghia package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contents.html">Contents</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Zdenek Svaton.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
