@@ -111,6 +111,28 @@ ________
    :align: center
 
 
+Genertaing docs
+_______________
+
+.. line-block::
+
+    All you need is love an generate docs. Ofcourse i not able to hlep you
+    with first step but second is quite easy.
+
+    For executing doctest
+
+.. code-block:: c
+
+    docs> make doctest
+
+.. line-block::
+
+    For building html documentation
+
+.. code-block:: c
+
+    docs> make html
+
 doctest
 _______
 
