@@ -1,6 +1,9 @@
 ghia package
 ============
 
+.. toctree::
+   :maxdepth: 4
+
 Submodules
 ----------
 

@@ -1,6 +1,9 @@
 GHIA README
 ===========
 
+.. toctree::
+   :maxdepth: 4
+
 Pusrpose of GHIA application is to assign issues to users, based on the
 content of the issue. Example: When the test of the issues contains string
 "network error", the it is assigned to user PepaNovak.
