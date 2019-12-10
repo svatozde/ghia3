@@ -1,0 +1,372 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ghia.common &#8212; ghia 0.4 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for ghia.common</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">configparser</span>
+<span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">ghia.github</span> <span class="k">import</span> <span class="n">GitHub</span>
+
+
+<div class="viewcode-block" id="PrinterObserver"><a class="viewcode-back" href="../../ghia.html#ghia.common.PrinterObserver">[docs]</a><span class="k">class</span> <span class="nc">PrinterObserver</span><span class="p">:</span>
+
+<div class="viewcode-block" id="PrinterObserver.issue"><a class="viewcode-back" href="../../ghia.html#ghia.common.PrinterObserver.issue">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">issue</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">issue</span><span class="p">):</span>
+        <span class="n">number</span><span class="p">,</span> <span class="n">url</span> <span class="o">=</span> <span class="n">issue</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">],</span> <span class="n">issue</span><span class="p">[</span><span class="s1">&#39;html_url&#39;</span><span class="p">]</span>
+        <span class="n">identifier</span> <span class="o">=</span> <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{owner}</span><span class="s1">/</span><span class="si">{repo}</span><span class="s1">#</span><span class="si">{number}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;-&gt; </span><span class="si">{identifier}</span><span class="s1"> (</span><span class="si">{url}</span><span class="s1">)&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PrinterObserver.assignees"><a class="viewcode-back" href="../../ghia.html#ghia.common.PrinterObserver.assignees">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">assignees</span><span class="p">(</span><span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+        <span class="n">mi</span> <span class="o">=</span> <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">pl</span> <span class="o">=</span> <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">eq</span> <span class="o">=</span> <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">assignees</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">old</span><span class="p">)</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">new</span><span class="p">)))</span>
+        <span class="n">assignees</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">assignee</span> <span class="ow">in</span> <span class="n">assignees</span><span class="p">:</span>
+            <span class="n">sign</span> <span class="o">=</span> <span class="n">eq</span>
+            <span class="k">if</span> <span class="n">assignee</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">old</span><span class="p">:</span>
+                <span class="n">sign</span> <span class="o">=</span> <span class="n">pl</span>
+            <span class="k">elif</span> <span class="n">assignee</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">new</span><span class="p">:</span>
+                <span class="n">sign</span> <span class="o">=</span> <span class="n">mi</span>
+            <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;   </span><span class="si">{sign}</span><span class="s1"> </span><span class="si">{assignee}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PrinterObserver.fallbacked"><a class="viewcode-back" href="../../ghia.html#ghia.common.PrinterObserver.fallbacked">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">fallbacked</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">added</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="s1">&#39;FALLBACK&#39;</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;yellow&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s1">&#39;   &#39;</span><span class="p">,</span> <span class="n">nl</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;added label&#39;</span> <span class="k">if</span> <span class="n">added</span> <span class="k">else</span> <span class="s1">&#39;already has label&#39;</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{prefix}</span><span class="s1">: </span><span class="si">{message}</span><span class="s1"> &quot;</span><span class="si">{label}</span><span class="s1">&quot;&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PrinterObserver.error"><a class="viewcode-back" href="../../ghia.html#ghia.common.PrinterObserver.error">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">of_issue</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="n">click</span><span class="o">.</span><span class="n">style</span><span class="p">(</span><span class="s1">&#39;ERROR&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fg</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">of_issue</span><span class="p">:</span>
+            <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="s1">&#39;   &#39;</span><span class="p">,</span> <span class="n">nl</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">err</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">click</span><span class="o">.</span><span class="n">echo</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{prefix}</span><span class="s1">: </span><span class="si">{message}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">err</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_strategy_append</span><span class="p">(</span><span class="n">found</span><span class="p">,</span> <span class="n">old</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">old</span> <span class="o">+</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">found</span> <span class="k">if</span> <span class="n">a</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">old</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_strategy_set</span><span class="p">(</span><span class="n">found</span><span class="p">,</span> <span class="n">old</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">found</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">old</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">old</span>
+
+
+<span class="k">def</span> <span class="nf">_strategy_change</span><span class="p">(</span><span class="n">found</span><span class="p">,</span> <span class="n">old</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">found</span>
+
+
+<span class="k">def</span> <span class="nf">_match_title</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">issue</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">       :param pattern:</span>
+<span class="sd">       :param issue:</span>
+<span class="sd">       :return: [True] if issue contains the pattern</span>
+
+<span class="sd">       &gt;&gt;&gt; _match_text(&#39;aaa&#39;,{&#39;title&#39;: &#39;aaa&#39;,&#39;body&#39;: &quot;bbb&quot;})</span>
+
+<span class="sd">       &gt;&gt;&gt; _match_text(&#39;aaa&#39;,{&#39;title&#39;: &#39;bbb&#39;,&#39;body&#39;: &quot;bbb&quot;})</span>
+
+<span class="sd">       &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">issue</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_match_text</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">issue</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param pattern:</span>
+<span class="sd">    :param issue:</span>
+<span class="sd">    :return: [True] if issue contains the pattern</span>
+
+<span class="sd">    &gt;&gt;&gt; _match_text(&#39;.*&#39;,{&#39;body&#39;: &#39;aaa&#39;})</span>
+<span class="sd">    &lt;re.Match object; span=(0, 3), match=&#39;aaa&#39;&gt;</span>
+
+<span class="sd">    &gt;&gt;&gt; _match_text(&#39;aaa&#39;,{&#39;body&#39;: &quot;bbb&quot;})</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">issue</span><span class="p">[</span><span class="s1">&#39;body&#39;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_match_label</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">issue</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param pattern:</span>
+<span class="sd">        :param issue:</span>
+<span class="sd">        :return: [True] if issue contains the pattern</span>
+
+<span class="sd">        &gt;&gt;&gt; _match_label(&#39;aaa&#39;, {&#39;labels&#39;: [{&#39;name&#39;: &#39;aaa&#39;}]})</span>
+<span class="sd">        True</span>
+
+<span class="sd">        &gt;&gt;&gt; _match_label(&#39;aaa&#39;, {&#39;labels&#39;: [{&#39;name&#39;: &#39;bbb&#39;}]})</span>
+<span class="sd">        False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">label</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+               <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">issue</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">_match_any</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            :param pattern:</span>
+<span class="sd">            :param issue:</span>
+<span class="sd">            :return: [True] if issue contains the pattern</span>
+
+<span class="sd">            &gt;&gt;&gt; _match_any(&#39;aaa&#39;,{&#39;labels&#39;: [{&#39;name&#39;: &#39;aaa&#39;}],&#39;body&#39;: &#39;bbb&#39;,&#39;title&#39;: &#39;bbb&#39;})</span>
+<span class="sd">            True</span>
+
+<span class="sd">            &gt;&gt;&gt; _match_any(&#39;aa&#39;,{&#39;labels&#39;: [{&#39;name&#39;: &#39;bbb&#39;}],&#39;body&#39;: &#39;bbb&#39;,&#39;title&#39;: &#39;bbb&#39;})</span>
+<span class="sd">            False</span>
+
+<span class="sd">            &gt;&gt;&gt; _match_any(&#39;aa&#39;,{&#39;labels&#39;: [{&#39;name&#39;: &#39;bbb&#39;}],&#39;body&#39;: &#39;aa&#39;,&#39;title&#39;: &#39;bbb&#39;})</span>
+<span class="sd">            &lt;re.Match object; span=(0, 2), match=&#39;aa&#39;&gt;</span>
+
+<span class="sd">            &gt;&gt;&gt; _match_any(&#39;aa&#39;,{&#39;labels&#39;: [{&#39;name&#39;: &#39;bbb&#39;}],&#39;body&#39;: &#39;bb&#39;,&#39;title&#39;: &#39;aa&#39;})</span>
+<span class="sd">            &lt;re.Match object; span=(0, 2), match=&#39;aa&#39;&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_match_title</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="ow">or</span> <span class="n">_match_text</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="ow">or</span> <span class="n">_match_label</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GHIA"><a class="viewcode-back" href="../../ghia.html#ghia.common.GHIA">[docs]</a><span class="k">class</span> <span class="nc">GHIA</span><span class="p">:</span>
+
+    <span class="n">STRATEGIES</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;append&#39;</span><span class="p">:</span> <span class="n">_strategy_append</span><span class="p">,</span>
+        <span class="s1">&#39;set&#39;</span><span class="p">:</span> <span class="n">_strategy_set</span><span class="p">,</span>
+        <span class="s1">&#39;change&#39;</span><span class="p">:</span> <span class="n">_strategy_change</span>
+    <span class="p">}</span>
+    <span class="n">DEFAULT_STRATEGY</span> <span class="o">=</span> <span class="s1">&#39;append&#39;</span>
+
+    <span class="n">ENVVAR_STRATEGY</span> <span class="o">=</span> <span class="s1">&#39;GHIA_STRATEGY&#39;</span>
+    <span class="n">ENVVAR_DRYRUN</span> <span class="o">=</span> <span class="s1">&#39;GHIA_DRYRUN&#39;</span>
+    <span class="n">ENVVAR_CONFIG</span> <span class="o">=</span> <span class="s1">&#39;GHIA_CONFIG&#39;</span>
+
+    <span class="n">MATCHERS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;any&#39;</span><span class="p">:</span> <span class="n">_match_any</span><span class="p">,</span>
+        <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">_match_text</span><span class="p">,</span>
+        <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="n">_match_title</span><span class="p">,</span>
+        <span class="s1">&#39;label&#39;</span><span class="p">:</span> <span class="n">_match_label</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">rules</span><span class="p">,</span> <span class="n">fallback_label</span><span class="p">,</span> <span class="n">dry_run</span><span class="p">,</span> <span class="n">ghia_strategy</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">github</span> <span class="o">=</span> <span class="n">GitHub</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules</span> <span class="o">=</span> <span class="n">rules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fallback_label</span> <span class="o">=</span> <span class="n">fallback_label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">real_run</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">dry_run</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">STRATEGIES</span><span class="p">[</span><span class="n">ghia_strategy</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observers</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+<div class="viewcode-block" id="GHIA.add_observer"><a class="viewcode-back" href="../../ghia.html#ghia.common.GHIA.add_observer">[docs]</a>    <span class="k">def</span> <span class="nf">add_observer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">observer</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">observer</span></div>
+
+<div class="viewcode-block" id="GHIA.remove_observer"><a class="viewcode-back" href="../../ghia.html#ghia.common.GHIA.remove_observer">[docs]</a>    <span class="k">def</span> <span class="nf">remove_observer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">observers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="GHIA.call_observers"><a class="viewcode-back" href="../../ghia.html#ghia.common.GHIA.call_observers">[docs]</a>    <span class="k">def</span> <span class="nf">call_observers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">observer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">observers</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">observer</span><span class="p">,</span> <span class="n">method</span><span class="p">)(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_matches_pattern</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">pattern</span><span class="p">,</span> <span class="n">issue</span><span class="p">):</span>
+        <span class="n">t</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">MATCHERS</span><span class="p">[</span><span class="n">t</span><span class="p">](</span><span class="n">p</span><span class="p">,</span> <span class="n">issue</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_matches</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">patterns</span><span class="p">,</span> <span class="n">issue</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_matches_pattern</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">issue</span><span class="p">)</span>
+                   <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">patterns</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_find_assignees</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">issue</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">username</span>
+                <span class="k">for</span> <span class="n">username</span><span class="p">,</span> <span class="n">patterns</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matches</span><span class="p">(</span><span class="n">patterns</span><span class="p">,</span> <span class="n">issue</span><span class="p">)</span>
+                <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_make_new_assignees</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">found</span><span class="p">,</span> <span class="n">old</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="p">(</span><span class="n">found</span><span class="p">,</span> <span class="n">old</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_update_assignees</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">issue</span><span class="p">,</span> <span class="n">assignees</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_run</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">github</span><span class="o">.</span><span class="n">set_issue_assignees</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">issue</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">],</span> <span class="n">assignees</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_update_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">issue</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">real_run</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">github</span><span class="o">.</span><span class="n">set_issue_labels</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">issue</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">],</span> <span class="n">labels</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_create_fallback_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">issue</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fallback_label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>  <span class="c1"># no fallback</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">label</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">issue</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fallback_label</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">call_observers</span><span class="p">(</span><span class="s1">&#39;fallbacked&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fallback_label</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fallback_label</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_labels</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">issue</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">call_observers</span><span class="p">(</span><span class="s1">&#39;fallbacked&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fallback_label</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GHIA.run_issue"><a class="viewcode-back" href="../../ghia.html#ghia.common.GHIA.run_issue">[docs]</a>    <span class="k">def</span> <span class="nf">run_issue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">issue</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">call_observers</span><span class="p">(</span><span class="s1">&#39;issue&#39;</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">issue</span><span class="p">)</span>
+        <span class="n">found_assignees</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_assignees</span><span class="p">(</span><span class="n">issue</span><span class="p">)</span>
+        <span class="n">old_assignees</span> <span class="o">=</span> <span class="p">[</span><span class="n">assignee</span><span class="p">[</span><span class="s1">&#39;login&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">assignee</span> <span class="ow">in</span> <span class="n">issue</span><span class="p">[</span><span class="s1">&#39;assignees&#39;</span><span class="p">]]</span>
+        <span class="n">new_assignees</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="p">(</span><span class="n">found_assignees</span><span class="p">,</span> <span class="n">old_assignees</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">old_assignees</span> <span class="o">!=</span> <span class="n">new_assignees</span><span class="p">:</span>  <span class="c1"># there is a change</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_assignees</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">issue</span><span class="p">,</span> <span class="n">new_assignees</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">call_observers</span><span class="p">(</span><span class="s1">&#39;assignees&#39;</span><span class="p">,</span> <span class="n">old_assignees</span><span class="p">,</span> <span class="n">new_assignees</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_assignees</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># noone is assigned now</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_fallback_label</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">issue</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GHIA.run"><a class="viewcode-back" href="../../ghia.html#ghia.common.GHIA.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">issues</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">github</span><span class="o">.</span><span class="n">issues</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">call_observers</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;Could not list issues &#39;</span>
+                                         <span class="n">f</span><span class="s1">&#39;for repository </span><span class="si">{owner}</span><span class="s1">/</span><span class="si">{repo}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">exit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">for</span> <span class="n">issue</span> <span class="ow">in</span> <span class="n">issues</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">run_issue</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">issue</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="n">number</span> <span class="o">=</span> <span class="n">issue</span><span class="p">[</span><span class="s1">&#39;number&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">call_observers</span><span class="p">(</span><span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;Could not update issue &#39;</span>
+                                             <span class="n">f</span><span class="s1">&#39;</span><span class="si">{owner}</span><span class="s1">/</span><span class="si">{repo}</span><span class="s1">#</span><span class="si">{number}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="parse_rules"><a class="viewcode-back" href="../../ghia.html#ghia.common.parse_rules">[docs]</a><span class="k">def</span> <span class="nf">parse_rules</span><span class="p">(</span><span class="n">cfg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parse labels to dict where label is key and list</span>
+<span class="sd">    of patterns is corresponding value</span>
+<span class="sd">    cfg: ConfigParser with loaded configuration of labels</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">patterns</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">username</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;patterns&#39;</span><span class="p">][</span><span class="n">username</span><span class="p">]</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()))</span>
+        <span class="k">for</span> <span class="n">username</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;patterns&#39;</span><span class="p">]</span>
+    <span class="p">}</span>
+    <span class="n">fallback</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;fallback&#39;</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">fallback</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">user_patterns</span> <span class="ow">in</span> <span class="n">patterns</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">user_patterns</span><span class="p">:</span>
+            <span class="n">t</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">GHIA</span><span class="o">.</span><span class="n">MATCHERS</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">patterns</span><span class="p">,</span> <span class="n">fallback</span></div>
+
+
+<div class="viewcode-block" id="get_rules"><a class="viewcode-back" href="../../ghia.html#ghia.common.get_rules">[docs]</a><span class="k">def</span> <span class="nf">get_rules</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">config_rules</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract labels from labels config and do the checks</span>
+<span class="sd">    config_rules: ConfigParser with loaded configuration of labels</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cfg_rules</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+        <span class="n">cfg_rules</span><span class="o">.</span><span class="n">optionxform</span> <span class="o">=</span> <span class="nb">str</span>
+        <span class="n">cfg_rules</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">config_rules</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parse_rules</span><span class="p">(</span><span class="n">cfg_rules</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">click</span><span class="o">.</span><span class="n">BadParameter</span><span class="p">(</span><span class="s1">&#39;incorrect configuration format&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_token"><a class="viewcode-back" href="../../ghia.html#ghia.common.get_token">[docs]</a><span class="k">def</span> <span class="nf">get_token</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">config_auth</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract token from auth config and do the checks</span>
+<span class="sd">    config_auth: ConfigParser with loaded configuration of auth</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cfg_auth</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">()</span>
+        <span class="n">cfg_auth</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">config_auth</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cfg_auth</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;github&#39;</span><span class="p">,</span> <span class="s1">&#39;token&#39;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">click</span><span class="o">.</span><span class="n">BadParameter</span><span class="p">(</span><span class="s1">&#39;incorrect configuration format&#39;</span><span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">ghia</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">GHIA README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ghia.html">ghia package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Zdenek Svaton.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

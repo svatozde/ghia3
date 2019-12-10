@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ghia.github &#8212; ghia 0.4 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for ghia.github</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">requests</span>
+
+
+<div class="viewcode-block" id="GitHub"><a class="viewcode-back" href="../../ghia.html#ghia.github.GitHub">[docs]</a><span class="k">class</span> <span class="nc">GitHub</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class can communicate with the GitHub API</span>
+<span class="sd">    just give it a token and go.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">API</span> <span class="o">=</span> <span class="s1">&#39;https://api.github.com&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        token: GitHub token</span>
+<span class="sd">        session: optional requests session</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">token</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session</span> <span class="ow">or</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;User-Agent&#39;</span><span class="p">:</span> <span class="s1">&#39;python/ghia&#39;</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">auth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_token_auth</span>
+
+    <span class="k">def</span> <span class="nf">_token_auth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This alters all our outgoing requests</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Authorization&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;token &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">token</span>
+        <span class="k">return</span> <span class="n">req</span>
+
+    <span class="k">def</span> <span class="nf">_paginated_json_get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="n">json</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s1">&#39;next&#39;</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">links</span> <span class="ow">and</span> <span class="s1">&#39;url&#39;</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">links</span><span class="p">[</span><span class="s1">&#39;next&#39;</span><span class="p">]:</span>
+            <span class="n">json</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_paginated_json_get</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">links</span><span class="p">[</span><span class="s1">&#39;next&#39;</span><span class="p">][</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">json</span>
+
+<div class="viewcode-block" id="GitHub.user"><a class="viewcode-back" href="../../ghia.html#ghia.github.GitHub.user">[docs]</a>    <span class="k">def</span> <span class="nf">user</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get current user authenticated by token</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_paginated_json_get</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.API}</span><span class="s1">/user&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GitHub.issues"><a class="viewcode-back" href="../../ghia.html#ghia.github.GitHub.issues">[docs]</a>    <span class="k">def</span> <span class="nf">issues</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="s1">&#39;open&#39;</span><span class="p">,</span> <span class="n">assignee</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get issues of a repo</span>
+<span class="sd">        owner: GitHub user or org</span>
+<span class="sd">        repo: repo name</span>
+<span class="sd">        state: open, closed, all (default open)</span>
+<span class="sd">        assignee: optional filter for assignees (None, &quot;none&quot;, &quot;&lt;username&gt;&quot;, or &quot;*&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="n">state</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">assignee</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">params</span><span class="p">[</span><span class="s1">&#39;assignee&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">assignee</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.API}</span><span class="s1">/repos/</span><span class="si">{owner}</span><span class="s1">/</span><span class="si">{repo}</span><span class="s1">/issues&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_paginated_json_get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GitHub.set_issue_assignees"><a class="viewcode-back" href="../../ghia.html#ghia.github.GitHub.set_issue_assignees">[docs]</a>    <span class="k">def</span> <span class="nf">set_issue_assignees</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">assignees</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets assignees for the issue. Replaces all existing assignees.</span>
+<span class="sd">        owner: GitHub user or org</span>
+<span class="sd">        repo: repo name</span>
+<span class="sd">        number: issue id</span>
+<span class="sd">        assignees: list of usernames (as strings)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.API}</span><span class="s1">/repos/</span><span class="si">{owner}</span><span class="s1">/</span><span class="si">{repo}</span><span class="s1">/issues/</span><span class="si">{number}</span><span class="s1">&#39;</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;assignees&#39;</span><span class="p">:</span> <span class="n">assignees</span><span class="p">})</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;assignees&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="GitHub.set_issue_labels"><a class="viewcode-back" href="../../ghia.html#ghia.github.GitHub.set_issue_labels">[docs]</a>    <span class="k">def</span> <span class="nf">set_issue_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">repo</span><span class="p">,</span> <span class="n">number</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets labels for the issue. Replaces all existing labels.</span>
+<span class="sd">        owner: GitHub user or org</span>
+<span class="sd">        repo: repo name</span>
+<span class="sd">        number: issue id</span>
+<span class="sd">        labels: list of labels (as strings)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.API}</span><span class="s1">/repos/</span><span class="si">{owner}</span><span class="s1">/</span><span class="si">{repo}</span><span class="s1">/issues/</span><span class="si">{number}</span><span class="s1">&#39;</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;labels&#39;</span><span class="p">:</span> <span class="n">labels</span><span class="p">})</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;labels&#39;</span><span class="p">]</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">ghia</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">GHIA README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../ghia.html">ghia package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Zdenek Svaton.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

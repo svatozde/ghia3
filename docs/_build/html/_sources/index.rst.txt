@@ -11,7 +11,6 @@ Welcome to ghia's documentation!
 
    README
    ghia
-   my_tests
 
 Indices and tables
 ==================
