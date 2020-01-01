@@ -4,11 +4,12 @@ from betamax import Betamax
 from betamax.cassette import cassette
 import os
 import pathlib
-from ghia.common import GHIA,get_rules
+from ghia.common import GHIA, get_rules
 import importlib
 import pkg_resources
+import click
 
-
+from ghia.Helpers import Parser
 
 TOKEN_PLACEHOLDER = '<AUTH_TOKEN>'
 TOKEN = os.getenv('GITHUB_TOKEN', default=TOKEN_PLACEHOLDER)
@@ -36,7 +37,8 @@ def sanitize_token(interaction, current_cassette):
 
 
 def sanitize_before_playback(interaction, current_cassette):
-    interaction.replace(USER_PLACEHOLDER,USER)
+    interaction.replace(USER_PLACEHOLDER, USER)
+
 
 with Betamax.configure() as config:
     config.cassette_library_dir = pathlib.Path(__file__).parent / 'cassettes'
@@ -49,7 +51,6 @@ def configPath(name):
     return pathlib.Path(__file__).parent / 'rules' / name
 
 
-
 class TestGit(TestCase):
 
     def test_list(self):
@@ -58,11 +59,10 @@ class TestGit(TestCase):
             issues = github.issues(USER, REPO)
             assert len(issues) == 116
 
-
     def test_assign(self):
         github = GitHub(TOKEN)
         with Betamax(github.session).use_cassette('assignees'):
-            github.set_issue_assignees(USER, REPO,124,[USER])
+            github.set_issue_assignees(USER, REPO, 124, [USER])
             issues = github.issues(USER, REPO, assignee=USER)
             for issue in issues:
                 if issue['number'] == 124:
@@ -70,8 +70,8 @@ class TestGit(TestCase):
                     break
 
     def test_apply_rules(self):
-        with open(configPath('rules.match_label.cfg'),'r') as conf:
-            rules, fallback  = get_rules(None,None,conf)
+        with open(configPath('rules.match_label.cfg'), 'r') as conf:
+            rules, fallback = get_rules(None, None, conf)
             ghia = GHIA(TOKEN, rules, fallback, False, GHIA.DEFAULT_STRATEGY)
 
             with Betamax(ghia.github.session).use_cassette('test_apply_rules'):
@@ -80,6 +80,38 @@ class TestGit(TestCase):
                 assert len(issues) == 14
 
 
+class TestCli(TestCase):
 
+    def test_multiple(self):
+        ret = Parser.parse_reposlug(None, None, 'somone/repo1, somenone/repo2')
+        assert len(ret) == 2
+        assert ret[0][0] == 'somone'
+        assert ret[0][1] == 'repo1'
+        assert ret[1][0] == 'somenone'
+        assert ret[1][1] == 'repo2'
 
+    def test_invalid(self):
+        with self.assertRaises(click.BadParameter):
+          Parser.parse_reposlug(None, None, 'somone/repo1,')
 
+    def test_invalid_2(self):
+        with self.assertRaises(click.BadParameter):
+            Parser.parse_reposlug(None, None, 'somone/repo1,somone/repo1,')
+
+    def test_invalid_3(self):
+        with self.assertRaises(click.BadParameter):
+            Parser.parse_reposlug(
+                None,
+                None,
+                'somone/repo1,'
+                'somone/repo1,'
+                'somone/repo1,'
+                )
+
+    def test_invalid_3(self):
+        with self.assertRaises(click.BadParameter):
+            Parser.parse_reposlug(
+                None,
+                None,
+                'somone/r,epo1,somone/repo1,somone/repo1,'
+                )

@@ -6,9 +6,6 @@ import configparser
 
 from ghia.common import GHIA, parse_rules
 
-
-
-
 def load_config_web(app):
     if GHIA.ENVVAR_CONFIG not in os.environ:
         app.logger.critical(f'Config not supplied by envvar {GHIA.ENVVAR_CONFIG}')

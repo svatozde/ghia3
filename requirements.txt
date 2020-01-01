@@ -1,3 +1,6 @@
 flask
 click
 requests
+aiohttp
+cchardet
+aiodns

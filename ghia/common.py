@@ -1,4 +1,7 @@
+import asyncio
 import configparser
+from concurrent.futures.thread import ThreadPoolExecutor
+
 import click
 import re
 
@@ -140,13 +143,15 @@ class GHIA:
         'label': _match_label
     }
 
-    def __init__(self, token, rules, fallback_label, dry_run, ghia_strategy):
-        self.github = GitHub(token)
+    def __init__(self, token, rules, fallback_label, dry_run, ghia_strategy,
+                 is_async=False):
+        self.github = GitHub(token, is_async=is_async)
         self.rules = rules
         self.fallback_label = fallback_label
         self.real_run = not dry_run
         self.strategy = self.STRATEGIES[ghia_strategy]
         self.observers = dict()
+        self.is_async = is_async
 
     def add_observer(self, name, observer):
         self.observers[name] = observer
@@ -179,7 +184,10 @@ class GHIA:
 
     def _update_assignees(self, owner, repo, issue, assignees):
         if self.real_run:
-            self.github.set_issue_assignees(owner, repo, issue['number'], assignees)
+            if self.is_async:
+                self.github.set_issue_assignees_async(owner, repo, issue['number'], assignees)
+            else:
+                self.github.set_issue_assignees(owner, repo, issue['number'], assignees)
 
     def _update_labels(self, owner, repo, issue, labels):
         if self.real_run:
@@ -207,7 +215,22 @@ class GHIA:
         if len(new_assignees) == 0:  # noone is assigned now
             self._create_fallback_label(owner, repo, issue)
 
-    def run(self, owner, repo):
+    def run(self, slugs):
+        if self.is_async:
+            with ThreadPoolExecutor(max_workers=6, thread_name_prefix='GHIA')\
+                    as executor:
+                for owner, repo in slugs:
+                    executor.submit(self.run_inner, owner, repo)
+
+                executor.shutdown(wait=True)
+                print("done")
+        else:
+            for owner, repo in slugs:
+                 self.run_inner(owner, repo)
+
+
+
+    def run_inner(self, owner, repo):
         try:
             issues = self.github.issues(owner, repo)
         except Exception:

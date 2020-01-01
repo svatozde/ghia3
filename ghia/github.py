@@ -1,4 +1,5 @@
 import requests
+import aiohttp
 
 
 class GitHub:
@@ -8,7 +9,7 @@ class GitHub:
     """
     API = 'https://api.github.com'
 
-    def __init__(self, token, session=None):
+    def __init__(self, token, session=None, is_async=False):
         """
         token: GitHub token
         session: optional requests session
@@ -17,6 +18,11 @@ class GitHub:
         self.session = session or requests.Session()
         self.session.headers = {'User-Agent': 'python/ghia'}
         self.session.auth = self._token_auth
+
+        self.aio_session = aiohttp.ClientSession(
+            headers=  self.session.headers,
+            auth=self._token_auth
+            )
 
     def _token_auth(self, req):
         """
@@ -52,6 +58,21 @@ class GitHub:
             params['assignee'] = assignee
         url = f'{self.API}/repos/{owner}/{repo}/issues'
         return self._paginated_json_get(url, params)
+
+    async def set_issue_assignees_async(self, owner, repo, number, assignees):
+        """
+               Sets assignees for the issue. Replaces all existing assignees.
+               owner: GitHub user or org
+               repo: repo name
+               number: issue id
+               assignees: list of usernames (as strings)
+        """
+        url = f'{self.API}/repos/{owner}/{repo}/issues/{number}'
+        async with aiohttp.ClientSession(
+            headers=  self.session.headers,
+            auth=self._token_auth
+        ) as r:
+            r.patch(url)
 
     def set_issue_assignees(self, owner, repo, number, assignees):
         """
