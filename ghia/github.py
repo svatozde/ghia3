@@ -2,6 +2,7 @@ import requests
 import aiohttp
 import asyncio
 import json
+from concurrent.futures import ThreadPoolExecutor
 
 
 class GitHub:
@@ -29,6 +30,9 @@ class GitHub:
             'Authorization' : 'token ' + token,
             'Content-Type' : 'application/json'
         }
+
+        self.executor = ThreadPoolExecutor(max_workers=100,
+                                           thread_name_prefix='async_requests')
 
 
 
@@ -84,10 +88,7 @@ class GitHub:
                 ) as resp:
                     print(resp.status)
 
-        loop = asyncio.new_event_loop()
-        loop.run_until_complete(
-            asyncio.ensure_future(aio_request(url, assignees))
-            )
+        self.executor.submit(aio_request, url, assignees)
 
     def set_issue_assignees(self, owner, repo, number, assignees):
         """
@@ -133,7 +134,5 @@ class GitHub:
                 ) as resp:
                     print(resp.status)
 
-        loop = asyncio.new_event_loop()
-        loop.run_until_complete(
-            asyncio.ensure_future(aio_request(url, labels))
-            )
+
+        self.executor.submit(aio_request, url, labels)

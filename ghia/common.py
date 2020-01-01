@@ -1,6 +1,7 @@
 import asyncio
 import configparser
 from concurrent.futures.thread import ThreadPoolExecutor
+import threading
 
 import click
 import re
@@ -32,11 +33,12 @@ class PrinterObserver:
             click.echo(f'   {sign} {assignee}')
 
     @staticmethod
-    def fallbacked(label, added=True):
-        prefix = click.style('FALLBACK', fg='yellow', bold=True)
-        click.echo('   ', nl=False)
-        message = 'added label' if added else 'already has label'
-        click.echo(f'{prefix}: {message} "{label}"')
+    def fallbacked(label, added=True, enabled=True):
+        if enabled:
+            prefix = click.style('FALLBACK', fg='yellow', bold=True)
+            click.echo('   ', nl=False)
+            message = 'added label' if added else 'already has label'
+            click.echo(f'{prefix}: {message} "{label}"')
 
     @staticmethod
     def error(message, of_issue=False):
@@ -148,10 +150,12 @@ class GHIA:
         self.github = GitHub(token, is_async=is_async)
         self.rules = rules
         self.fallback_label = fallback_label
+        self.fallback_enabled = fallback_label is not None
         self.real_run = not dry_run
         self.strategy = self.STRATEGIES[ghia_strategy]
         self.observers = dict()
         self.is_async = is_async
+        self.print_lock = threading.Lock()
 
     def add_observer(self, name, observer):
         self.observers[name] = observer
@@ -198,14 +202,15 @@ class GHIA:
 
     def _create_fallback_label(self, owner, repo, issue):
         if self.fallback_label is None:
-            return  # no fallback
+            return  False
         labels = [label['name'] for label in issue['labels']]
         if self.fallback_label not in labels:
-            self.call_observers('fallbacked', self.fallback_label, True)
+
             labels.append(self.fallback_label)
             self._update_labels(owner, repo, issue, labels)
+            return True
         else:
-            self.call_observers('fallbacked', self.fallback_label, False)
+            return False
 
     def run_issue(self, owner, repo, issue):
         self.call_observers('issue', owner, repo, issue)
@@ -215,8 +220,15 @@ class GHIA:
         if old_assignees != new_assignees:  # there is a change
             self._update_assignees(owner, repo, issue, new_assignees)
         self.call_observers('assignees', old_assignees, new_assignees)
+        applied = False
         if len(new_assignees) == 0:  # noone is assigned now
-            self._create_fallback_label(owner, repo, issue)
+            applied = self._create_fallback_label(owner, repo, issue)
+
+        with self.print_lock:
+            self.call_observers('issue', owner, repo, issue)
+            self.call_observers('assignees', old_assignees, new_assignees)
+            if(len(new_assignees) == 0):
+                self.call_observers('fallbacked', self.fallback_label,applied,self.fallback_enabled )
 
     def run(self, slugs):
         if self.is_async:
