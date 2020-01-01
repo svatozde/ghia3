@@ -191,7 +191,10 @@ class GHIA:
 
     def _update_labels(self, owner, repo, issue, labels):
         if self.real_run:
-            self.github.set_issue_labels(owner, repo, issue['number'], labels)
+            if self.is_async:
+                self.github.set_issue_labels_async(owner, repo, issue['number'], labels)
+            else:
+                self.github.set_issue_labels(owner, repo, issue['number'], labels)
 
     def _create_fallback_label(self, owner, repo, issue):
         if self.fallback_label is None:
@@ -242,8 +245,9 @@ class GHIA:
         for issue in issues:
             try:
                 self.run_issue(owner, repo, issue)
-            except Exception:
+            except Exception as e:
                 number = issue['number']
+                print(str(e))
                 self.call_observers('error', f'Could not update issue '
                                              f'{owner}/{repo}#{number}', True)
 
