@@ -76,15 +76,18 @@ class GitHub:
                assignees: list of usernames (as strings)
         """
         url = f'{self.API}/repos/{owner}/{repo}/issues/{number}'
-        async def aio_request():
+        async def aio_request(_url, _assignees):
             async with aiohttp.ClientSession( headers=self.async_headers) as session:
                 async with session.patch(
-                    url,
-                    data=json.dumps({"assignees": assignees})
+                    _url,
+                    data=json.dumps({"assignees": _assignees})
                 ) as resp:
                     print(resp.status)
-                    print(await resp.text())
-        asyncio.run(aio_request())
+
+        loop = asyncio.new_event_loop()
+        loop.run_until_complete(
+            asyncio.ensure_future(aio_request(url, assignees))
+            )
 
     def set_issue_assignees(self, owner, repo, number, assignees):
         """
@@ -122,13 +125,15 @@ class GitHub:
         """
         url = f'{self.API}/repos/{owner}/{repo}/issues/{number}'
 
-        async def aio_request():
+        async def aio_request(_url, _labels):
             async with aiohttp.ClientSession(headers=self.async_headers) as session:
                 async with session.patch(
                         url,
                         data=json.dumps({'labels': labels})
                 ) as resp:
                     print(resp.status)
-                    print(await resp.text())
 
-        asyncio.run(aio_request())
+        loop = asyncio.new_event_loop()
+        loop.run_until_complete(
+            asyncio.ensure_future(aio_request(url, labels))
+            )

@@ -236,7 +236,8 @@ class GHIA:
     def run_inner(self, owner, repo):
         try:
             issues = self.github.issues(owner, repo)
-        except Exception:
+        except Exception as e:
+            print(str(e))
             self.call_observers('error', f'Could not list issues '
                                          f'for repository {owner}/{repo}')
             exit(10)
